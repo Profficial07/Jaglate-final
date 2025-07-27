@@ -16,15 +16,16 @@ urlpatterns = [
     path('qr/<str:unique_key>/download/', views.download_qr, name='download_qr'),
 ]
 
-# ✅ React frontend fallback route (uncommented & enabled)
+# React frontend fallback route - MUST be last
 urlpatterns += [
     re_path(
-        r'^(?!admin/|login/|qr_generator/|generate/|compose/|qr/|assets/|media/).*$',  # exclude Django routes
-        views.react_app  # Make sure this view renders your index.html
+        r'^(?!admin|login|qr_generator|generate|compose|qr|assets|media|api).*$',
+        views.react_app,
+        name='react_app'
     ),
 ]
 
-# ✅ Serve static and media files during development
+# Serve static and media files during development
 if settings.DEBUG:
     urlpatterns += static(
         '/assets/',

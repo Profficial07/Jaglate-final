@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Jaglate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom right, #f8e7d2, #d2a679); /* Chocolate-like gradient */
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='30' cy='30' r='10'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px; /* Increased padding */
+            border-radius: 16px; /* Larger border-radius */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+            max-width: 450px; /* Slightly wider */
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            position: relative; /* For z-index over body::before */
+            z-index: 1;
+            animation: fadeInScale 0.7s ease-out forwards;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h2 {
+            font-family: 'Dancing Script', cursive; /* Applied Dancing Script font */
+            font-size: 2.8em; /* Larger font size */
+            font-weight: 700;
+            color: #8b4513; /* Dark chocolate color */
+            margin-bottom: 25px; /* More space below heading */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+
+        .error-message {
+            color: #dc2626; /* Tailwind's red-600 for consistency */
+            background-color: #fef2f2; /* Light red background */
+            border: 1px solid #ef4444; /* Red border */
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Styling for Django form paragraphs */
+        form p {
+            margin-bottom: 20px; /* More space between form fields */
+            text-align: left; /* Align labels left */
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px; /* Space between label and input */
+            font-weight: 600; /* Bolder labels */
+            color: #555;
+            font-size: 1.05em;
+        }
+
+        form input[type="text"],
+        form input[type="password"] {
+            width: 100%;
+            padding: 14px; /* More padding for inputs */
+            border: 2px solid #d2a679; /* Chocolate border */
+            border-radius: 8px; /* Rounded corners */
+            box-sizing: border-box;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        form input[type="text"]:focus,
+        form input[type="password"]:focus {
+            outline: none;
+            border-color: #8b4513; /* Darker chocolate on focus */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 0 3px rgba(139, 69, 19, 0.2); /* Focus ring */
+        }
+
+        /* Funky button styles (replicated from previous UI) */
+        .funky-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 30px; /* Larger padding for button */
+            border-radius: 9999px; /* Pill shape */
+            font-weight: 600;
+            font-size: 1.15em; /* Slightly larger font */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            width: 100%; /* Make button full width */
+            margin-top: 20px; /* Space above button */
+        }
+
+        .funky-button-primary {
+            background: linear-gradient(to right, #6a3805, #8b4513); /* Chocolate gradient */
+            color: #fff;
+            border: 2px solid #b8860b; /* Gold border */
+        }
+        .funky-button-primary:hover {
+            background: linear-gradient(to right, #8b4513, #6a3805);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .login-container {
+                padding: 25px; /* Reduce padding on mobile */
+                border-radius: 12px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+                margin: 0 15px; /* Add some side margin */
+            }
+            h2 {
+                font-size: 2.2em;
+                margin-bottom: 20px;
+            }
+            .funky-button {
+                padding: 12px 25px;
+                font-size: 1.05em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Welcome Back!</h2> <!-- Changed heading for a friendlier tone -->
+        {% if form.errors %}
+            <p class="error-message">Invalid username or password</p>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="funky-button funky-button-primary">Login</button>
+        </form>
+    </div>
+</body>
+</html>

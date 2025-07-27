@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft Your Sweet Message - Jaglate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@400;500;700&family=Lora&family=Montserrat&family=Pacifico&family=Caveat&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #f8e7d2, #d2a679);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        main { flex-grow: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        /* Navbar & Footer */
+        .navbar { background-color: #6a3805; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .navbar-brand { font-family: 'Dancing Script', cursive; font-size: 2.2em; font-weight: 700; color: #ffd700; text-decoration: none; }
+        .navbar-links { display: flex; gap: 15px; }
+        .navbar-links a { color: white; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
+        .navbar-links a:hover { color: #ffd700; }
+        .footer { background-color: #6a3805; color: rgba(255, 255, 255, 0.8); padding: 20px; text-align: center; font-size: 0.9em; }
+        .footer a { color: #ffd700; text-decoration: none; }
+
+        /* Editor UI */
+        #editor-area {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #canvas-preview {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #d2a679;
+        }
+        
+        #preview-image {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        #text-overlay {
+            position: absolute;
+            cursor: move;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Lora', serif;
+            font-size: 24px;
+            color: #333333;
+            text-align: center;
+            line-height: 1.3;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            max-width: 90%;
+            word-wrap: break-word;
+            user-select: none;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Hidden canvas for composite generation */
+        #hidden-canvas {
+            display: none;
+        }
+        
+        /* Toolbar */
+        #toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .toolbar-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .toolbar-btn:hover { background-color: #e9ecef; }
+        .toolbar-btn svg { width: 24px; height: 24px; }
+        .toolbar-btn input[type="color"] {
+            width: 28px; height: 28px; border: none; padding: 0;
+            background: none; cursor: pointer;
+        }
+        
+        /* Font size slider */
+        .font-size-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .font-size-container input[type="range"] {
+            width: 80px;
+        }
+        
+        /* Popups for Toolbar */
+        .popup {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 10px;
+            z-index: 10;
+        }
+
+        /* Font Selector Popup */
+        #font-selector { display: none; flex-direction: column; gap: 5px; width: 180px; }
+        .font-option {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .font-option:hover { background-color: #f0f0f0; }
+        .font-option.selected { background-color: #6a3805; color: white; }
+
+        /* Emoji Popup */
+        #emoji-picker { display: none; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+        .emoji { cursor: pointer; font-size: 24px; text-align: center; padding: 5px; border-radius: 4px; transition: background-color 0.2s; }
+        .emoji:hover { background-color: #f0f0f0; }
+
+        /* Modal Styles */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 90%; max-height: 90vh; overflow: auto; }
+
+        /* Button */
+        .funky-button {
+            display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px;
+            border-radius: 9999px; font-weight: 600; font-size: 1.05em; cursor: pointer;
+            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: linear-gradient(to right, #6a3805, #8b4513); color: #fff;
+            border: 2px solid #b8860b;
+        }
+        .funky-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+
+        /* Processing indicator */
+        .processing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="#" class="navbar-brand">Jaglate Wishes</a>
+        <nav class="navbar-links">
+            <a href="#">Generate QR</a>
+            <a href="#">About Us</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Personalize Your Wish</h1>
+            <p class="text-lg text-gray-600 mb-6">For: <span class="font-semibold text-blue-600">{{ qr_data.unique_key }}</span></p>
+
+            <form id="messageForm" method="post" action="{% url 'save_message' qr_data.unique_key %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <textarea name="message" id="messageInput" rows="3" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 focus:border-amber-700 outline-none" placeholder="Type your sweet message here..."></textarea>
+
+                <div id="editor-area">
+                    <div id="canvas-preview">
+                        <img id="preview-image" src="" alt="Background">
+                        <div id="text-overlay">Your Message</div>
+                    </div>
+                    
+                    <div id="toolbar">
+                        <button type="button" id="upload-btn" class="toolbar-btn" title="Set Background">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                        </button>
+                        <button type="button" id="font-btn" class="toolbar-btn" title="Change Font">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.624l-.219-1.036a3.375 3.375 0 00-2.455-2.455l-1.036-.219l1.036-.219a3.375 3.375 0 002.455-2.455l.219-1.036l.219 1.036a3.375 3.375 0 002.456 2.455l1.035.219l-1.035.219a3.375 3.375 0 00-2.456 2.455l-.219 1.036z" /></svg>
+                        </button>
+                        <button type="button" class="toolbar-btn" title="Text Color">
+                            <input type="color" id="textColor" value="#333333">
+                        </button>
+                        <div class="font-size-container">
+                            <span title="Font Size">A</span>
+                            <input type="range" id="fontSize" min="12" max="48" value="24" title="Font Size">
+                        </div>
+                        <button type="button" id="emoji-btn" class="toolbar-btn" title="Add Emoji">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 9.75h.008v.008H9V9.75zm6 0h.008v.008H15V9.75z" /></svg>
+                        </button>
+                    </div>
+
+                    <div id="font-selector" class="popup">
+                        <div class="font-option selected" style="font-family: 'Lora', serif;" data-font="Lora">Lora (Default)</div>
+                        <div class="font-option" style="font-family: 'Montserrat', sans-serif;" data-font="Montserrat">Montserrat</div>
+                        <div class="font-option" style="font-family: 'Pacifico', cursive;" data-font="Pacifico">Pacifico</div>
+                        <div class="font-option" style="font-family: 'Caveat', cursive;" data-font="Caveat">Caveat</div>
+                    </div>
+                    <div id="emoji-picker" class="popup">
+                        <span class="emoji">🍫</span><span class="emoji">❤️</span><span class="emoji">🎉</span>
+                        <span class="emoji">🎂</span><span class="emoji">✨</span><span class="emoji">😊</span>
+                        <span class="emoji">😂</span><span class="emoji">😍</span><span class="emoji">👍</span>
+                    </div>
+
+                </div>
+
+                <!-- Hidden canvas for composite image generation -->
+                <canvas id="hidden-canvas" width="500" height="500"></canvas>
+
+                <!-- Form inputs -->
+                <input type="file" id="imageUpload" name="background_image" class="hidden" accept="image/*">
+                <input type="hidden" name="composite_image_data" id="compositeImageData">
+                <input type="hidden" name="text_color" id="finalTextColor" value="#333333">
+                <input type="hidden" name="font_family" id="finalFontFamily" value="Lora">
+                <input type="hidden" name="font_size" id="finalFontSize" value="24">
+                <input type="hidden" name="text_position_x" id="finalTextPosX" value="50">
+                <input type="hidden" name="text_position_y" id="finalTextPosY" value="50">
+
+                <button type="submit" class="funky-button w-full mt-6" id="submitBtn">
+                    🍫 Submit Sweet Message
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Crop Image</h2>
+            <div><img id="imageToCrop" src="" alt="Crop Preview" style="max-width: 100%;"></div>
+            <div class="mt-4">
+                <button type="button" id="cropButton" class="funky-button">Crop & Apply</button>
+                <button type="button" id="cancelCrop" class="ml-2 text-gray-600">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">&copy; 2024 Jaglate. All rights reserved.</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Element references
+        const messageInput = document.getElementById('messageInput');
+        const textOverlay = document.getElementById('text-overlay');
+        const canvasPreview = document.getElementById('canvas-preview');
+        const previewImage = document.getElementById('preview-image');
+        const hiddenCanvas = document.getElementById('hidden-canvas');
+        const hiddenCtx = hiddenCanvas.getContext('2d');
+        
+        // Toolbar buttons and popups
+        const uploadBtn = document.getElementById('upload-btn');
+        const imageUploadInput = document.getElementById('imageUpload');
+        const fontBtn = document.getElementById('font-btn');
+        const fontSelector = document.getElementById('font-selector');
+        const textColorInput = document.getElementById('textColor');
+        const fontSizeInput = document.getElementById('fontSize');
+        const emojiBtn = document.getElementById('emoji-btn');
+        const emojiPicker = document.getElementById('emoji-picker');
+
+        // Form elements
+        const messageForm = document.getElementById('messageForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const compositeImageDataInput = document.getElementById('compositeImageData');
+        const finalTextColor = document.getElementById('finalTextColor');
+        const finalFontFamily = document.getElementById('finalFontFamily');
+        const finalFontSize = document.getElementById('finalFontSize');
+        const finalTextPosX = document.getElementById('finalTextPosX');
+        const finalTextPosY = document.getElementById('finalTextPosY');
+
+        // Modal elements
+        const cropModal = document.getElementById('cropModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropButton = document.getElementById('cropButton');
+        const cancelCropButton = document.getElementById('cancelCrop');
+
+        let cropper;
+        let currentBackgroundImageData = null;
+
+        // --- Text Input and Preview ---
+        messageInput.addEventListener('input', () => {
+            const message = messageInput.value || 'Your Message';
+            textOverlay.textContent = message;
+            updateTextPosition(); // Update position after content change
+        });
+
+        // --- Toolbar Logic ---
+
+        // Function to close all popups
+        const closeAllPopups = (except = null) => {
+            [fontSelector, emojiPicker].forEach(popup => {
+                if (popup !== except) {
+                    popup.style.display = 'none';
+                }
+            });
+        };
+
+        // Background Image Upload
+        uploadBtn.addEventListener('click', () => imageUploadInput.click());
+        imageUploadInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imageToCrop.src = event.target.result;
+                    cropModal.classList.add('show');
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                    });
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        cropButton.addEventListener('click', () => {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+                const croppedData = canvas.toDataURL('image/jpeg');
+                
+                previewImage.src = croppedData;
+                previewImage.style.display = 'block';
+                canvasPreview.style.backgroundColor = 'transparent';
+                currentBackgroundImageData = croppedData;
+
+                cropModal.classList.remove('show');
+                cropper.destroy();
+            }
+        });
+
+        cancelCropButton.addEventListener('click', () => {
+            cropModal.classList.remove('show');
+            if(cropper) cropper.destroy();
+            imageUploadInput.value = '';
+        });
+
+        // Font Selection
+        fontBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = fontSelector.style.display === 'none' || !fontSelector.style.display;
+            closeAllPopups();
+            fontSelector.style.display = isHidden ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.font-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const font = option.dataset.font;
+                textOverlay.style.fontFamily = `'${font}', sans-serif`;
+                finalFontFamily.value = font;
+                document.querySelectorAll('.font-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                closeAllPopups();
+            });
+        });
+
+        // Text Color
+        textColorInput.addEventListener('input', () => {
+            textOverlay.style.color = textColorInput.value;
+            finalTextColor.value = textColorInput.value;
+        });
+
+        // Font Size
+        fontSizeInput.addEventListener('input', () => {
+            const size = fontSizeInput.value + 'px';
+            textOverlay.style.fontSize = size;
+            finalFontSize.value = fontSizeInput.value;
+        });
+
+        // Emoji Picker
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = emojiPicker.style.display === 'none' || !emojiPicker.style.display;
+            closeAllPopups();
+            emojiPicker.style.display = isHidden ? 'grid' : 'none';
+        });
+
+        document.querySelectorAll('.emoji').forEach(emoji => {
+            emoji.addEventListener('click', () => {
+                messageInput.value += emoji.textContent;
+                messageInput.dispatchEvent(new Event('input'));
+            });
+        });
+
+        // --- Draggable Text Logic ---
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        function updateTextPosition() {
+            const canvasRect = canvasPreview.getBoundingClientRect();
+            const textRect = textOverlay.getBoundingClientRect();
+            
+            const finalX = ((textRect.left - canvasRect.left + textOverlay.offsetWidth / 2) / canvasRect.width) * 100;
+            const finalY = ((textRect.top - canvasRect.top + textOverlay.offsetHeight / 2) / canvasRect.height) * 100;
+            
+            finalTextPosX.value = Math.max(0, Math.min(100, finalX)).toFixed(2);
+            finalTextPosY.value = Math.max(0, Math.min(100, finalY)).toFixed(2);
+        }
+
+        textOverlay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const textRect = textOverlay.getBoundingClientRect();
+            offsetX = e.clientX - textRect.left;
+            offsetY = e.clientY - textRect.top;
+            textOverlay.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const canvasRect = canvasPreview.getBoundingClientRect();
+            let x = e.clientX - canvasRect.left - offsetX;
+            let y = e.clientY - canvasRect.top - offsetY;
+
+            // Constrain within canvas bounds
+            x = Math.max(0, Math.min(x, canvasRect.width - textOverlay.offsetWidth));
+            y = Math.max(0, Math.min(y, canvasRect.height - textOverlay.offsetHeight));
+
+            textOverlay.style.left = `${x}px`;
+            textOverlay.style.top = `${y}px`;
+            textOverlay.style.transform = 'none'; // Remove center transform when dragging
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                textOverlay.style.cursor = 'move';
+                document.body.style.userSelect = '';
+                updateTextPosition();
+            }
+        });
+
+        // Touch event handlers
+        textOverlay.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            const touch = e.touches[0];
+            const textRect = textOverlay.getBoundingClientRect();
+            offsetX = touch.clientX - textRect.left;
+            offsetY = touch.clientY - textRect.top;
+            textOverlay.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+
+            const canvasRect = canvasPreview.getBoundingClientRect();
+            let x = touch.clientX - canvasRect.left - offsetX;
+            let y = touch.clientY - canvasRect.top - offsetY;
+
+            // Constrain within canvas bounds
+            x = Math.max(0, Math.min(x, canvasRect.width - textOverlay.offsetWidth));
+            y = Math.max(0, Math.min(y, canvasRect.height - textOverlay.offsetHeight));
+
+            textOverlay.style.left = `${x}px`;
+            textOverlay.style.top = `${y}px`;
+            textOverlay.style.transform = 'none';
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isDragging) {
+                isDragging = false;
+                textOverlay.style.cursor = 'move';
+                document.body.style.userSelect = '';
+                updateTextPosition();
+            }
+        });
+
+
+        // --- Composite Image Generation ---
+        function generateCompositeImage() {
+            return new Promise((resolve) => {
+                // Set canvas size
+                hiddenCanvas.width = 500;
+                hiddenCanvas.height = 500;
+                
+                // Clear canvas
+                hiddenCtx.clearRect(0, 0, 500, 500);
+                
+                // Draw background
+                if (currentBackgroundImageData) {
+                    const bgImg = new Image();
+                    bgImg.onload = () => {
+                        hiddenCtx.drawImage(bgImg, 0, 0, 500, 500);
+                        drawTextOnCanvas();
+                    };
+                    bgImg.src = currentBackgroundImageData;
+                } else {
+                    // Default background color
+                    hiddenCtx.fillStyle = '#f0f0f0';
+                    hiddenCtx.fillRect(0, 0, 500, 500);
+                    drawTextOnCanvas();
+                }
+                
+                function drawTextOnCanvas() {
+                    const message = messageInput.value || 'Your Message';
+                    const fontSize = parseInt(finalFontSize.value);
+                    const fontFamily = finalFontFamily.value;
+                    const textColor = finalTextColor.value;
+                    const posX = (parseFloat(finalTextPosX.value) / 100) * 500;
+                    const posY = (parseFloat(finalTextPosY.value) / 100) * 500;
+                    
+                    // Configure text style
+                    hiddenCtx.font = `${fontSize}px '${fontFamily}', sans-serif`;
+                    hiddenCtx.fillStyle = textColor;
+                    hiddenCtx.textAlign = 'center';
+                    hiddenCtx.textBaseline = 'middle';
+                    
+                    // Add text shadow
+                    hiddenCtx.shadowColor = 'rgba(0,0,0,0.1)';
+                    hiddenCtx.shadowBlur = 2;
+                    hiddenCtx.shadowOffsetX = 1;
+                    hiddenCtx.shadowOffsetY = 1;
+                    
+                    // Draw text (handle multi-line)
+                    const lines = message.split('\n');
+                    const lineHeight = fontSize * 1.3;
+                    const startY = posY - ((lines.length - 1) * lineHeight) / 2;
+                    
+                    lines.forEach((line, index) => {
+                        hiddenCtx.fillText(line, posX, startY + (index * lineHeight));
+                    });
+                    
+                    // Get composite image data
+                    const compositeDataURL = hiddenCanvas.toDataURL('image/jpeg', 0.9);
+                    resolve(compositeDataURL);
+                }
+            });
+        }
+
+        // --- Form Submission ---
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show processing state
+            submitBtn.classList.add('processing');
+            submitBtn.textContent = 'Processing...';
+            
+            try {
+                // Generate composite image
+                const compositeImage = await generateCompositeImage();
+                compositeImageDataInput.value = compositeImage;
+                
+                // Submit form
+                messageForm.submit();
+            } catch (error) {
+                console.error('Error generating composite image:', error);
+                alert('Error processing image. Please try again.');
+                
+                // Reset button state
+                submitBtn.classList.remove('processing');
+                submitBtn.textContent = '🍫 Submit Sweet Message';
+            }
+        });
+
+        // Close popups when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#toolbar') && !e.target.closest('.popup')) {
+                closeAllPopups();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

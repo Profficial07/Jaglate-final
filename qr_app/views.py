@@ -17,7 +17,7 @@ from qr_app.decorator import *
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
+
 def generate_qr_page(request):
     """
     Renders the page where users can specify the number of QR codes to generate.
@@ -28,7 +28,7 @@ def generate_qr_page(request):
 def react_app(request):
     return render(request, "index.html")
 
-@login_required
+
 def generate_qr_codes(request):
     """
     Handles the form submission for QR code generation.

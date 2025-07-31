@@ -11,7 +11,7 @@
         /* Base styles */
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #f8e7d2, #d2a679);
+            background: #881933;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -30,12 +30,122 @@
         }
         
         /* Navbar & Footer */
-        .navbar { background-color: #6a3805; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
-        .navbar-brand { font-family: 'Dancing Script', cursive; font-size: 2.2em; font-weight: 700; color: #ffd700; text-decoration: none; }
-        .navbar-links { display: flex; gap: 15px; }
-        .navbar-links a { color: white; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
-        .navbar-links a:hover { color: #ffd700; }
-        .footer { background-color: #6a3805; color: rgba(255, 255, 255, 0.8); padding: 20px; text-align: center; font-size: 0.9em; }
+        /* --- Add these styles to your existing CSS file --- */
+
+       /* --- Final Navbar Styles (For Desktop & Mobile) --- */
+.navbar {
+    background-color: #681024;
+    color: white;
+    padding: 15px 30px; /* Added more horizontal padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    z-index: 1000;
+    flex-wrap: nowrap; /* Prevents items from wrapping to a new line */
+}
+
+.navbar-brand {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.0em; /* Slightly reduced size to create more space */
+    font-weight: 700;
+    color: #ffd700;
+    text-decoration: none;
+    white-space: nowrap; /* Ensures the brand name itself doesn't wrap */
+}
+
+.navbar-links {
+    display: flex;
+    gap: 25px; /* Adjusted gap */
+    align-items: center;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    white-space: nowrap; /* Prevents individual links from wrapping */
+}
+
+.navbar-links a:hover {
+    color: #ffd700;
+}
+
+/* --- Hamburger Menu Button (hidden by default on desktop) --- */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1010; /* Ensures it's clickable above other content */
+}
+
+.hamburger-menu span {
+    width: 2rem;
+    height: 0.25rem;
+    background: white;
+    border-radius: 10px;
+    transition: all 0.3s linear;
+    position: relative;
+    transform-origin: 1px;
+}
+
+/* --- Media Query for Tablet & Mobile --- */
+/* A wider breakpoint (900px) activates the mobile menu earlier to prevent wrapping */
+@media (max-width: 900px) {
+    .hamburger-menu {
+        display: flex;
+    }
+
+    /* Hides the link list and prepares it for the slide-out menu */
+    .navbar-links {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 100%;
+        max-width: 300px; /* The menu won't cover the entire screen on tablets */
+        background-color: #681024;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.25);
+        
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+
+        /* Hides menu off-screen by default */
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* This class is toggled by JavaScript to show the menu */
+    .navbar-links.is-active {
+        transform: translateX(0);
+    }
+    
+    .navbar-links a {
+        font-size: 1.5rem;
+    }
+
+    /* Animates the hamburger icon into an 'X' when active */
+    .hamburger-menu.is-active span:nth-child(1) {
+        transform: rotate(45deg);
+    }
+    .hamburger-menu.is-active span:nth-child(2) {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    .hamburger-menu.is-active span:nth-child(3) {
+        transform: rotate(-45deg);
+    }
+}
+        .footer { background-color: #681024; color: rgba(255, 255, 255, 0.8); padding: 20px; text-align: center; font-size: 0.9em; }
         .footer a { color: #ffd700; text-decoration: none; }
 
         /* Editor UI */
@@ -72,11 +182,15 @@
             padding: 10px 15px;
             border-radius: 8px;
             font-family: 'Lora', serif;
-            font-size: 24px;
-            color: #333333;
-            text-align: center;
             line-height: 1.3;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            font-size: 24px;
+            color: #ffffff;
+            text-shadow:
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
+            text-align: center;
             max-width: 90%;
             word-wrap: break-word;
             user-select: none;
@@ -105,17 +219,21 @@
         }
         
         .toolbar-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
+        background: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
         }
-        .toolbar-btn:hover { background-color: #e9ecef; }
+
+        .toolbar-btn:hover {
+        background: #f0f0f0;
+        }
+
         .toolbar-btn svg { width: 24px; height: 24px; }
         .toolbar-btn input[type="color"] {
             width: 28px; height: 28px; border: none; padding: 0;
@@ -148,7 +266,29 @@
         }
 
         /* Font Selector Popup */
-        #font-selector { display: none; flex-direction: column; gap: 5px; width: 180px; }
+        #font-selector {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            width: 180px;
+
+            /* Limit height and add scrolling */
+            max-height: 220px; /* adjust as needed */
+            overflow-y: auto;
+        }
+
+        /* Optional: Style scrollbar for better appearance */
+        #font-selector::-webkit-scrollbar {
+            width: 6px;
+        }
+        #font-selector::-webkit-scrollbar-thumb {
+            background-color: #aaa;
+            border-radius: 4px;
+        }
+        #font-selector::-webkit-scrollbar-track {
+            background-color: #f0f0f0;
+        }
+
         .font-option {
             padding: 8px 12px;
             border-radius: 6px;
@@ -173,7 +313,7 @@
             display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px;
             border-radius: 9999px; font-weight: 600; font-size: 1.05em; cursor: pointer;
             transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            background: linear-gradient(to right, #6a3805, #8b4513); color: #fff;
+            background: #681024; color: #fff;
             border: 2px solid #b8860b;
         }
         .funky-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
@@ -187,17 +327,28 @@
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <a href="#" class="navbar-brand">Jaglate Wishes</a>
-        <nav class="navbar-links">
-            <a href="#">Generate QR</a>
-            <a href="#">About Us</a>
-        </nav>
-    </header>
+
+<header class="navbar">
+    <a href="/" class="navbar-brand">Jaglate Sweet Message</a>
+    
+    <nav class="navbar-links" id="navLinks">
+        {% if request.user.is_authenticated and request.user.is_staff %}
+            <a href="{% url 'generate_qr_page' %}">Generate QR</a>
+        {% endif %}
+        <a href="/">The Jaglate</a>
+        <a href="/how-to-use">SMS Pack</a>
+    </nav>
+    
+    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</header>
 
     <main>
         <div class="container">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Personalize Your Wish</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Personalize Your Message</h1>
             <p class="text-lg text-gray-600 mb-6">For: <span class="font-semibold text-blue-600">{{ qr_data.unique_key }}</span></p>
 
             <form id="messageForm" method="post" action="{% url 'save_message' qr_data.unique_key %}" enctype="multipart/form-data">
@@ -215,33 +366,88 @@
                         <button type="button" id="upload-btn" class="toolbar-btn" title="Set Background">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                         </button>
-                        <button type="button" id="font-btn" class="toolbar-btn" title="Change Font">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.624l-.219-1.036a3.375 3.375 0 00-2.455-2.455l-1.036-.219l1.036-.219a3.375 3.375 0 002.455-2.455l.219-1.036l.219 1.036a3.375 3.375 0 002.456 2.455l1.035.219l-1.035.219a3.375 3.375 0 00-2.456 2.455l-.219 1.036z" /></svg>
+                       <button type="button" id="font-btn" class="toolbar-btn" title="Change Font">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                            <text x="2" y="18" font-family="sans-serif" font-size="14">a</text>
+                            <text x="12" y="18" font-family="sans-serif" font-size="18">A</text>
+                        </svg>
                         </button>
                         <button type="button" class="toolbar-btn" title="Text Color">
                             <input type="color" id="textColor" value="#333333">
                         </button>
-                        <div class="font-size-container">
-                            <span title="Font Size">A</span>
-                            <input type="range" id="fontSize" min="12" max="48" value="24" title="Font Size">
+                        <div class="font-size-container" title="Adjust Font Size" style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" title="Font Size">
+                        <path d="M4 6h16M8 6v12" />
+                        <path d="M16 6v4" stroke-opacity="0.6" />
+                        </svg>
+
+
+                        <!-- Font size range slider -->
+                        <input type="range" id="fontSize" min="12" max="48" value="24" title="Font Size" style="vertical-align: middle;">
+
+                        <!-- Large A icon -->
+                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <text x="0" y="20" font-size="20" font-family="sans-serif">A</text>
+                        </svg> -->
                         </div>
+                        
                         <button type="button" id="emoji-btn" class="toolbar-btn" title="Add Emoji">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 9.75h.008v.008H9V9.75zm6 0h.008v.008H15V9.75z" /></svg>
                         </button>
                     </div>
 
                     <div id="font-selector" class="popup">
-                        <div class="font-option selected" style="font-family: 'Lora', serif;" data-font="Lora">Lora (Default)</div>
-                        <div class="font-option" style="font-family: 'Montserrat', sans-serif;" data-font="Montserrat">Montserrat</div>
-                        <div class="font-option" style="font-family: 'Pacifico', cursive;" data-font="Pacifico">Pacifico</div>
-                        <div class="font-option" style="font-family: 'Caveat', cursive;" data-font="Caveat">Caveat</div>
-                    </div>
-                    <div id="emoji-picker" class="popup">
-                        <span class="emoji">🍫</span><span class="emoji">❤️</span><span class="emoji">🎉</span>
-                        <span class="emoji">🎂</span><span class="emoji">✨</span><span class="emoji">😊</span>
-                        <span class="emoji">😂</span><span class="emoji">😍</span><span class="emoji">👍</span>
+                    <div class="font-option selected" style="font-family: 'Lora', serif;" data-font="Lora">Lora (Default)</div>
+                    <div class="font-option" style="font-family: 'Montserrat', sans-serif;" data-font="Montserrat">Montserrat</div>
+                    <div class="font-option" style="font-family: 'Roboto', sans-serif;" data-font="Roboto">Roboto</div>
+                    <div class="font-option" style="font-family: 'Open Sans', sans-serif;" data-font="Open Sans">Open Sans</div>
+                    <div class="font-option" style="font-family: 'Poppins', sans-serif;" data-font="Poppins">Poppins</div>
+                    <div class="font-option" style="font-family: 'Playfair Display', serif;" data-font="Playfair Display">Playfair Display</div>
+                    <div class="font-option" style="font-family: 'Merriweather', serif;" data-font="Merriweather">Merriweather</div>
+                    <div class="font-option" style="font-family: 'Raleway', sans-serif;" data-font="Raleway">Raleway</div>
+                    <div class="font-option" style="font-family: 'Pacifico', cursive;" data-font="Pacifico">Pacifico</div>
+                    <div class="font-option" style="font-family: 'Caveat', cursive;" data-font="Caveat">Caveat</div>
+                    <div class="font-option" style="font-family: 'Dancing Script', cursive;" data-font="Dancing Script">Dancing Script</div>
+                    <div class="font-option" style="font-family: 'Bebas Neue', sans-serif;" data-font="Bebas Neue">Bebas Neue</div>
                     </div>
 
+                   <div id="emoji-picker" class="popup">
+                    <!-- Chocolate / Sweets / Food -->
+                    <span class="emoji">🍫</span> <!-- Chocolate -->
+                    <span class="emoji">🍩</span> <!-- Donut -->
+                    <span class="emoji">🍪</span> <!-- Cookie -->
+                    <span class="emoji">🧁</span> <!-- Cupcake -->
+                    <span class="emoji">🍰</span> <!-- Cake slice -->
+                    <span class="emoji">🍮</span> <!-- Flan -->
+                    <span class="emoji">🍦</span> <!-- Ice cream -->
+
+                    <!-- Love / Affection -->
+                    <span class="emoji">❤️</span> <!-- Red heart -->
+                    <span class="emoji">💝</span> <!-- Heart with ribbon -->
+                    <span class="emoji">💖</span> <!-- Sparkling heart -->
+                    <span class="emoji">💕</span> <!-- Two hearts -->
+                    <span class="emoji">💘</span> <!-- Heart with arrow -->
+                    <span class="emoji">😍</span> <!-- Heart eyes -->
+
+                    <!-- Celebration / Fun -->
+                    <span class="emoji">🎉</span> <!-- Party popper -->
+                    <span class="emoji">🎊</span> <!-- Confetti ball -->
+                    <span class="emoji">🎂</span> <!-- Birthday cake -->
+                    <span class="emoji">✨</span> <!-- Sparkles -->
+                    <span class="emoji">🎁</span> <!-- Gift box -->
+                    <span class="emoji">🎈</span> <!-- Balloon -->
+                    
+                    <!-- Positive Expressions -->
+                    <span class="emoji">😊</span> <!-- Smiling face -->
+                    <span class="emoji">😂</span> <!-- Joy face -->
+                    <span class="emoji">👍</span> <!-- Thumbs up -->
+                    <span class="emoji">🥰</span> <!-- Smiling with hearts -->
+                    <span class="emoji">😋</span> <!-- Tasty face -->
+                    <span class="emoji">😎</span> <!-- Cool face -->
+                    <span class="emoji">🤗</span> <!-- Hugging -->
+                    <span class="emoji">🤩</span> <!-- Star eyes -->
+                    </div>
                 </div>
 
                 <!-- Hidden canvas for composite image generation -->
@@ -257,7 +463,7 @@
                 <input type="hidden" name="text_position_y" id="finalTextPosY" value="50">
 
                 <button type="submit" class="funky-button w-full mt-6" id="submitBtn">
-                    🍫 Submit Sweet Message
+                    🍪 Submit Sweet Message
                 </button>
             </form>
         </div>
@@ -274,10 +480,20 @@
         </div>
     </div>
     
-    <footer class="footer">&copy; 2024 Jaglate. All rights reserved.</footer>
+    <footer class="footer">&copy; 2025 Jaglate. All rights reserved.</footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const navLinks = document.getElementById('navLinks');
+
+        hamburgerMenu.addEventListener('click', () => {
+            hamburgerMenu.classList.toggle('is-active');
+            navLinks.classList.toggle('is-active');
+
+            const isActive = navLinks.classList.contains('is-active');
+            hamburgerMenu.setAttribute('aria-expanded', isActive);
+        });
     document.addEventListener('DOMContentLoaded', function() {
         // Element references
         const messageInput = document.getElementById('messageInput');
@@ -427,14 +643,15 @@
         function updateTextPosition() {
             const canvasRect = canvasPreview.getBoundingClientRect();
             const textRect = textOverlay.getBoundingClientRect();
-            
+
             const finalX = ((textRect.left - canvasRect.left + textOverlay.offsetWidth / 2) / canvasRect.width) * 100;
             const finalY = ((textRect.top - canvasRect.top + textOverlay.offsetHeight / 2) / canvasRect.height) * 100;
-            
+
             finalTextPosX.value = Math.max(0, Math.min(100, finalX)).toFixed(2);
             finalTextPosY.value = Math.max(0, Math.min(100, finalY)).toFixed(2);
         }
 
+        // MOUSE EVENTS
         textOverlay.addEventListener('mousedown', (e) => {
             isDragging = true;
             const textRect = textOverlay.getBoundingClientRect();
@@ -442,53 +659,16 @@
             offsetY = e.clientY - textRect.top;
             textOverlay.style.cursor = 'grabbing';
             document.body.style.userSelect = 'none';
+            document.body.style.overflow = 'hidden'; // 🔒 Prevent scroll
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-            
+
             const canvasRect = canvasPreview.getBoundingClientRect();
             let x = e.clientX - canvasRect.left - offsetX;
             let y = e.clientY - canvasRect.top - offsetY;
 
-            // Constrain within canvas bounds
-            x = Math.max(0, Math.min(x, canvasRect.width - textOverlay.offsetWidth));
-            y = Math.max(0, Math.min(y, canvasRect.height - textOverlay.offsetHeight));
-
-            textOverlay.style.left = `${x}px`;
-            textOverlay.style.top = `${y}px`;
-            textOverlay.style.transform = 'none'; // Remove center transform when dragging
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                textOverlay.style.cursor = 'move';
-                document.body.style.userSelect = '';
-                updateTextPosition();
-            }
-        });
-
-        // Touch event handlers
-        textOverlay.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            const touch = e.touches[0];
-            const textRect = textOverlay.getBoundingClientRect();
-            offsetX = touch.clientX - textRect.left;
-            offsetY = touch.clientY - textRect.top;
-            textOverlay.style.cursor = 'grabbing';
-            document.body.style.userSelect = 'none';
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            const touch = e.touches[0];
-
-            const canvasRect = canvasPreview.getBoundingClientRect();
-            let x = touch.clientX - canvasRect.left - offsetX;
-            let y = touch.clientY - canvasRect.top - offsetY;
-
-            // Constrain within canvas bounds
             x = Math.max(0, Math.min(x, canvasRect.width - textOverlay.offsetWidth));
             y = Math.max(0, Math.min(y, canvasRect.height - textOverlay.offsetHeight));
 
@@ -497,11 +677,52 @@
             textOverlay.style.transform = 'none';
         });
 
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                textOverlay.style.cursor = 'move';
+                document.body.style.userSelect = '';
+                document.body.style.overflow = ''; // ✅ Restore scroll
+                updateTextPosition();
+            }
+        });
+
+        // TOUCH EVENTS
+        textOverlay.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            const touch = e.touches[0];
+            const textRect = textOverlay.getBoundingClientRect();
+            offsetX = touch.clientX - textRect.left;
+            offsetY = touch.clientY - textRect.top;
+            textOverlay.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+            document.body.style.overflow = 'hidden'; // 🔒 Prevent scroll
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+
+            const touch = e.touches[0];
+            const canvasRect = canvasPreview.getBoundingClientRect();
+            let x = touch.clientX - canvasRect.left - offsetX;
+            let y = touch.clientY - canvasRect.top - offsetY;
+
+            x = Math.max(0, Math.min(x, canvasRect.width - textOverlay.offsetWidth));
+            y = Math.max(0, Math.min(y, canvasRect.height - textOverlay.offsetHeight));
+
+            textOverlay.style.left = `${x}px`;
+            textOverlay.style.top = `${y}px`;
+            textOverlay.style.transform = 'none';
+
+            e.preventDefault(); // 👈 Block scroll during touch drag
+        }, { passive: false });
+
         document.addEventListener('touchend', () => {
             if (isDragging) {
                 isDragging = false;
                 textOverlay.style.cursor = 'move';
                 document.body.style.userSelect = '';
+                document.body.style.overflow = ''; // ✅ Restore scroll
                 updateTextPosition();
             }
         });

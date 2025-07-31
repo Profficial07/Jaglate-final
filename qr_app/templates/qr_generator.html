@@ -108,45 +108,123 @@
             transform: translateY(-1px);
         }
 
-        /* Navbar Styles (copied from display_message.html) */
+        /* --- Final Navbar Styles (For Desktop & Mobile) --- */
         .navbar {
-            background-color: #6a3805; /* Dark chocolate */
+            background-color: #681024;
             color: white;
-            padding: 15px 20px;
+            padding: 15px 30px; /* Added more horizontal padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            flex-wrap: wrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            z-index: 1000;
+            flex-wrap: nowrap; /* Prevents items from wrapping to a new line */
         }
+
         .navbar-brand {
             font-family: 'Dancing Script', cursive;
-            font-size: 2.2em;
+            font-size: 2.0em; /* Slightly reduced size to create more space */
             font-weight: 700;
-            color: #ffd700; /* Gold */
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            color: #ffd700;
             text-decoration: none;
-            margin-right: 20px;
+            white-space: nowrap; /* Ensures the brand name itself doesn't wrap */
         }
+
         .navbar-links {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 25px; /* Adjusted gap */
+            align-items: center;
         }
+
         .navbar-links a {
             color: white;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
+            white-space: nowrap; /* Prevents individual links from wrapping */
         }
+
         .navbar-links a:hover {
             color: #ffd700;
         }
 
+        /* --- Hamburger Menu Button (hidden by default on desktop) --- */
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 2rem;
+            height: 2rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1010; /* Ensures it's clickable above other content */
+        }
+
+        .hamburger-menu span {
+            width: 2rem;
+            height: 0.25rem;
+            background: white;
+            border-radius: 10px;
+            transition: all 0.3s linear;
+            position: relative;
+            transform-origin: 1px;
+        }
+
+        /* --- Media Query for Tablet & Mobile --- */
+        /* A wider breakpoint (900px) activates the mobile menu earlier to prevent wrapping */
+        @media (max-width: 900px) {
+            .hamburger-menu {
+                display: flex;
+            }
+
+            /* Hides the link list and prepares it for the slide-out menu */
+            .navbar-links {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 100%;
+                max-width: 300px; /* The menu won't cover the entire screen on tablets */
+                background-color: #681024;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.25);
+                
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2rem;
+
+                /* Hides menu off-screen by default */
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            /* This class is toggled by JavaScript to show the menu */
+            .navbar-links.is-active {
+                transform: translateX(0);
+            }
+            
+            .navbar-links a {
+                font-size: 1.5rem;
+            }
+
+            /* Animates the hamburger icon into an 'X' when active */
+            .hamburger-menu.is-active span:nth-child(1) {
+                transform: rotate(45deg);
+            }
+            .hamburger-menu.is-active span:nth-child(2) {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            .hamburger-menu.is-active span:nth-child(3) {
+                transform: rotate(-45deg);
+            }
+        }
+
         /* Footer Styles (copied from display_message.html) */
         .footer {
-            background-color: #6a3805;
+            background-color: #681024;
             color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             text-align: center;
@@ -164,36 +242,7 @@
         }
 
         /* Mobile specific adjustments for Navbar, Container, etc. */
-        @media (max-width: 640px) {
-            .navbar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px;
-            }
-            .navbar-brand {
-                margin-bottom: 10px;
-                font-size: 1.8em;
-            }
-            .navbar-links {
-                width: 100%;
-                justify-content: center;
-                gap: 10px;
-            }
-            .navbar-links a {
-                margin: 0 5px;
-                font-size: 0.9em;
-            }
-            .container {
-                padding: 25px; /* Reduce padding on mobile */
-            }
-            .qr-grid {
-                grid-template-columns: 1fr; /* Stack QR items on small screens */
-            }
-            .qr-item {
-                width: 100%; /* Full width for stacked items */
-                max-width: 200px; /* Limit individual item width */
-            }
-        }
+        
 
         /* Funky button for Generate QR Codes */
         .funky-button {
@@ -211,26 +260,35 @@
         }
 
         .funky-button-primary {
-            background: linear-gradient(to right, #6a3805, #8b4513); /* Chocolate gradient */
+            background: #681024; /* Chocolate gradient */
             color: #fff;
             border: 2px solid #b8860b; /* Gold border */
         }
         .funky-button-primary:hover {
-            background: linear-gradient(to right, #8b4513, #6a3805);
+            background: #681024;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <a href="{% url 'generate_qr_page' %}" class="navbar-brand">Jaglate Wishes</a>
-        <nav class="navbar-links">
+<header class="navbar">
+    <a href="/" class="navbar-brand">Jaglate Sweet Message</a>
+    
+    <nav class="navbar-links" id="navLinks">
+        {% if request.user.is_authenticated and request.user.is_staff %}
             <a href="{% url 'generate_qr_page' %}">Generate QR</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact</a>
-        </nav>
-    </header>
+        {% endif %}
+        <a href="/">The Jaglate</a>
+        <a href="/how-to-use">SMS Pack</a>
+    </nav>
+    
+    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</header>
 
     <main>
         <div class="container">
@@ -281,10 +339,21 @@
     </main>
 
     <footer class="footer">
-        <p>&copy; 2024 Jaglate. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        <p>&copy; 2025 Jaglate. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
     </footer>
 
     <script>
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const navLinks = document.getElementById('navLinks');
+
+        hamburgerMenu.addEventListener('click', () => {
+            hamburgerMenu.classList.toggle('is-active');
+            navLinks.classList.toggle('is-active');
+
+            const isActive = navLinks.classList.contains('is-active');
+            hamburgerMenu.setAttribute('aria-expanded', isActive);
+        });
+        
         function toggleCustomInput() {
             const limitSelect = document.getElementById('limit');
             const customLimitInput = document.getElementById('custom_limit');

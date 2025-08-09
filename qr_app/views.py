@@ -15,8 +15,12 @@ from django.conf import settings
 from PIL import ImageDraw, ImageFont # Import ImageDraw and ImageFont here
 from qr_app.decorator import *
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages  
+import re
 
-
+def encrypt_code(code):
+    # You can use any encryption, here base64 for demonstration
+    return base64.urlsafe_b64encode(code.encode()).decode()
 
 def generate_qr_page(request):
     """
@@ -49,27 +53,29 @@ def generate_qr_codes(request):
                 return render(request, 'qr_generator.html', {'error': 'Limit must be between 1 and 100.'})
 
             generated_qrs = []
-            base_key = "DK"
-            # Find the highest existing unique_key to continue numbering
-            last_qr = QRCodeData.objects.filter(unique_key__startswith=base_key).order_by('-unique_key').first()
+            base_key = "JA"
+            # Find the last QR code and decrypt its key to get the last number
+            last_qr = QRCodeData.objects.order_by('-id').first()
             if last_qr:
                 try:
-                    last_num = int(last_qr.unique_key[len(base_key):])
-                except ValueError:
+                    last_decoded = base64.urlsafe_b64decode(last_qr.unique_key.encode()).decode()
+                    if last_decoded.startswith(base_key):
+                        last_num = int(last_decoded[len(base_key):])
+                    else:
+                        last_num = 0
+                except Exception:
                     last_num = 0
             else:
                 last_num = 0
 
             for i in range(1, limit + 1):
                 new_num = last_num + i
-                unique_key = f"{base_key}{new_num:03d}" # e.g., DK001, DK002
-
-                # Construct the full link that will be embedded in the QR code
-                # This link will point to the 'enter_message' page for this specific QR code
-                qr_link = request.build_absolute_uri(reverse('display_message', args=[unique_key]))
+                code = f"{base_key}{new_num:04d}"  # e.g., JA0001
+                encrypted_key = encrypt_code(code)
+                qr_link = request.build_absolute_uri(reverse('display_message', args=[encrypted_key]))
 
 
-                # Generate QR code image
+                # Generate QR code image with visible_code in center
                 qr = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -95,24 +101,24 @@ def generate_qr_codes(request):
 
                 # Use textbbox instead of textsize for newer Pillow versions
                 # textbbox returns (left, top, right, bottom)
-                bbox = draw.textbbox((0, 0), unique_key, font=font)
+                bbox = draw.textbbox((0, 0), code, font=font)  # Show JA0001 in center
                 text_width = bbox[2] - bbox[0]
                 text_height = bbox[3] - bbox[1]
 
                 img_width, img_height = img.size
                 text_x = (img_width - text_width) / 2
                 text_y = (img_height - text_height) / 2
-                draw.text((text_x, text_y), unique_key, font=font, fill=(0, 0, 0)) # Black text
+                draw.text((text_x, text_y), code, font=font, fill=(0, 0, 0)) # Black text
 
                 # Save QR code image to a buffer
                 buffer = io.BytesIO()
                 img.save(buffer, format="PNG")
                 image_file = ContentFile(buffer.getvalue())
 
-                # Create or update QRCodeData object
-                qr_data, created = QRCodeData.objects.get_or_create(unique_key=unique_key)
+                # Store encrypted_key as unique_key, visible_code for display
+                qr_data, created = QRCodeData.objects.get_or_create(unique_key=encrypted_key)
                 qr_data.link = qr_link
-                qr_data.qr_image.save(f'{unique_key}.png', image_file, save=False) # save=False to avoid double save
+                qr_data.qr_image.save(f'{encrypted_key}.png', image_file, save=False) # save=False to avoid double save
                 qr_data.save()
 
                 generated_qrs.append(qr_data)
@@ -128,11 +134,6 @@ def generate_qr_codes(request):
 # ... (imports) ...
 
 # qr_app/views.py
-
-import base64
-import re
-
-# ... (other imports) ...
 
 # def save_message(request, unique_key):
 #     """
@@ -196,8 +197,6 @@ import re
 
 #     print("--- GET Request Received (or not a POST) ---")
 #     return redirect('enter_message_page', unique_key=unique_key)
-from django.contrib import messages  
-
 def save_message(request, unique_key):
     """
     View to save the personalized message and generate composite image
@@ -326,3 +325,6 @@ def compose_message(request):
         return render(request, 'done.html', {'image_url': qr.image.url})
     
     return render(request, 'compose.html')
+    
+    # return render(request, 'compose.html')
+    # return render(request, 'compose.html')
